@@ -5,7 +5,7 @@
 			<?php foreach( $posts as $post ): ?>
 			<li>
 				<h2><a href="<?php echo Url::action('PostsController::show',$post->id); ?>"><?php echo $post->title; ?></a></h2>
-				<p>Posted on <?php echo strftime("%B %e, %Y", $post->created); ?></p>
+				<p>Posted on <?php echo $post->created; ?></p>
 				<p><?php echo $post->content; ?></p>
 				<p>
 					<a href="<?php echo Url::action('PostsController::edit',$post->id); ?>">Edit</a>
