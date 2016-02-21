@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Spare-Trooper</title>
+        <script src="phaser.js"></script>
+        <script src='js/menu.js'></script>
+        <script src="js/gamestate.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript">
+        window.onload=function(){
+            game=new Phaser.Game(800,600,Phaser.AUTO,'gamediv');
+            game.state.add('menu', menu);
+            game.state.add('game', gamestate);
+            //game.state.add('selectplayer', selectplayer);
+            game.state.start('menu');
+        }
+        </script>
+
+    <!--script type="text/javascript">
+
+    window.onload = function() {
+        var game =  new Phaser.Game(800,600, Phaser.AUTO, 'gamediv', { preload: preload, create: create, update: update });
+
+        function preload(){
+            //game.load.image('spaceship','assets/spaceship.png');
+            game.load.image('space1','assets/space1.jpg');
+            game.load.image('meteorite','assets/meteorite.png');
+            game.load.spritesheet('player', 'assets/player.png',130,130,26);
+            game.load.image('TitleGameOver','assets/GameOverTitle.png');
+            game.load.spritesheet('btnrestar','assets/RestartBtn.png',400,100);
+            game.load.spritesheet('btnstart','assets/btnStart.png',400,100);
+            game.load.image('bullet1','assets/bullet1.png');
+            game.load.image('enemie1','assets/enemie1.png');
+            game.load.image('enemies1Bullets','assets/');
+            game.load.bitmapFont('TR2N','assets/TR2N.png','assets/TR2N.xml');
+        }
+
+        var shoot;
+        var background;
+        var meteorite;
+        var bullets;
+        var enemie1Bullet;
+
+        var score = 0;
+        var scoreText;
+        var highscore=0;
+        var highscoreText;
+
+        var bulletTime=0;
+        function create(){
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+            background=game.add.tileSprite(0,0,game.width,game.height,'space1');
+            background.autoScroll(-40,0);
+            player = game.add.sprite(80,game.world.height/2,'player');
+            player.anchor.setTo(0.5);
+            player.scale.setTo(0.6);
+            player.enableBody=true;
+            player.animations.add('death');
+            player.health=10;
+            game.physics.arcade.enable(player);
+            player.body.collideWorldBounds=true;
+            gamepad = game.input.keyboard.createCursorKeys();
+            shoot = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            meteorites = game.add.group();
+            meteorites.enableBody = true;
+            meteorites.outOfBoundsKill=true;
+            for(var i=0; i<5; i++){
+                meteorite = meteorites.create(game.rnd.integerInRange(800,1600),game.rnd.integerInRange(56, 544),'meteorite');
+                meteorite.body.velocity.x=-100;
+                meteorite.health=3;
+            }
+            bullets=game.add.group();
+            bullets.enableBody=true;
+            bullets.physicsBodyType=Phaser.Physics.ARCADE;
+            bullets.createMultiple(50, 'bullet1');
+            bullets.setAll('checkWorldBounds',true);
+            bullets.setAll('outOfBoundsKill',true);
+            bullets.setAll('anchor.x',0.5);
+            bullets.setAll('anchor.y',1);
+            scoreText=game.add.text(16,16,'Score: 0', {font: 'TR2N', fontSize: '32px', fill: '#00ffff'});
+            enemies1=game.add.group();
+            enemies1.enableBody=true;
+            enemies1.outOfBoundsKill=true;
+            for(i=0;i<10;i++){
+                enemie1=enemies1.create(game.rnd.integerInRange(2400,4000),game.rnd.integerInRange(0,522), 'enemie1');
+                enemie1.health=2;
+                enemie1.body.velocity.x=-100;
+                enemie1.scale.setTo(.5);
+            }
+            enemie1Bullets=game.add.group();
+            enemie1Bullets.enableBody=true;
+            enemie1Bullets.physicsBodyType=Phaser.Physics.ARCADE;
+            enemie1Bullets.createMultiple(30,'enemies1Bullets');
+            enemie1Bullets.setAll('outOfBoundsKill',true);
+            enemie1Bullets.setAll('checkWorldBounds',true);
+        }
+
+        function update(){
+            game.physics.arcade.overlap(bullets, meteorites, bulletVSmeteorite, null, this);
+            game.physics.arcade.overlap(bullets, enemies1, bulletVSenemies1, null, this);
+            player.body.acceleration.x=0;
+            player.body.acceleration.y=0;
+            if(gamepad.up.isDown){
+                player.body.acceleration.y=-300;
+            }
+            else if(gamepad.down.isDown){
+                player.body.acceleration.y=300;
+            }
+            else{
+                player.body.acceleration.y=0;
+            }  
+            if(gamepad.left.isDown){
+                player.body.acceleration.x=-300;
+            }
+            else if(gamepad.right.isDown){
+                player.body.acceleration.x=300;
+            }
+            else{
+                player.body.acceleration.x=0;
+            }
+            if(shoot.isDown){
+                fire();
+            }
+            game.physics.arcade.overlap(player, meteorites, playerKill, null, this);
+            game.physics.arcade.overlap(player, enemies1, playerKill, null, this);
+        }
+
+
+
+
+
+
+
+
+
+
+
+        function playerKill(player, meteorite){
+            player.animations.play('death',10,false,true);
+            game.time.events.add(Phaser.Timer.SECOND * 4, death, this);
+            gameover=game.add.sprite(game.width/2, 60,'TitleGameOver');
+            gameover.anchor.setTo(0.5,0);
+            gameover.alpha=0;
+            btnrestart=game.add.button(100,450,'btnrestar',Restart,this,1,0,2);
+            btnrestart.scale.setTo(0.5);
+            btnrestart.alpha=0;
+            game.add.tween(gameover).to( { alpha: 1 }, 10000, Phaser.Easing.Linear.None, true, 1000 );
+            game.add.tween(btnrestart).to( { alpha: 1 }, 10000, Phaser.Easing.Linear.None, true, 1000 );
+            highscoreText=game.add.text(400,400,'HS: ', {fontSize: '32px', fill: '#fff'});
+            if(score>highscore){
+                highscore=score;
+            }
+
+            highscoreText.text="HS: "+highscore;
+
+        }
+
+        function death(){
+            player.kill();
+        }
+
+        function Restart(){
+            game.state.start(game.state.current);
+            score=0;
+
+            //player.revive();
+            //player.resetPosition();
+        }
+
+        function fire(){
+            if(game.time.now>bulletTime){
+                bullet=bullets.getFirstExists(false);
+                if(bullet){
+                    bullet.reset(player.x+40,player.y+3);
+                    bullet.body.velocity.x=600;
+                    bulletTime=game.time.now+100;
+                }
+            }
+        }
+        
+
+        function bulletVSmeteorite(bullet, meteorite){
+            //bullet.kill();
+            //meteorite.kill();
+            //score+=10;
+            //scoreText.text= 'Score: '+score;
+            meteorite.health-=1;
+            bullet.kill();
+            if(meteorite.health==0){
+                meteorite.kill();
+                score+=10;
+                scoreText.text= 'Score: '+score;
+            }
+        }
+
+        function bulletVSenemies1(bullet, enemie1){
+            enemie1.health-=1;
+            bullet.kill();
+            if(enemie1.health==0){
+                enemie1.kill();
+                score+=20;
+                scoreText.text='Score: '+score;
+            }
+        }
+
+    };
+
+    </script-->
+    <div id="gamediv"></div>
+
+    
+
+    </body>
+</html>
+<!--
+http://www.thebotanistgame.com/blog/2015/08/12/saving-loading-game-state-phaserjs.html
+https://leanpub.com/html5shootemupinanafternoon/read
+http://codeperfectionist.com/articles/phaser-js-tutorial-building-a-polished-space-shooter-game-part-1/
+http://www.nicholls.co/blog/post/Creando-Juegos-HTML5-con-Phaser-en-Monaco-->
